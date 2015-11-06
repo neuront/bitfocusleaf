@@ -1,0 +1,62 @@
+<script>
+$('document').ready(function() {
+  var MAP_OP = {
+    '^': function(x, y) { return x ^ y; },
+    '|': function(x, y) { return x | y; }
+  };
+  var MAP_NEGA = {
+    '+': function(x, y) { return x == y; },
+    '-': function(x, y) { return x != y; }
+  };
+  function paint() {
+    function uop(x, y) {
+      while (0 != (x & y)) {
+        var m = (x & y) >> 1;
+        var n = (x | y);
+        x = m;
+        y = n;
+      }
+      return x ^ y;
+    }
+    var ch = $('#ch').val();
+    var size = 2 << parseInt($('#sz').val());
+    var op = MAP_OP[$('#op').val()];
+    var nega = MAP_NEGA[$('#nega').val()];
+    var str = '';
+    for (i = 0; i < size; ++i) {
+      for (j = 0; j < size; ++j)
+        if (nega(uop(i, j), op(i, j))) str += ch; else str += '  ';
+      str += '\n';
+    }
+    $('tt').html(str);
+  }
+  $('select').change(function() {
+    paint();
+  });
+  for (i = 0; i < 6; ++i)
+    $('#sz').append('<option>' + (i + 1) + '</option>');
+});
+</script>
+
+<div>
+    <select id='sz'></select>
+    <select id='ch'>
+        <option>.:</option>
+        <option>_!</option>
+        <option>::</option>
+        <option>[]</option>
+        <option>.&nbsp;</option>
+        <option>+&nbsp;</option>
+        <option>*&nbsp;</option>
+        <option>o&nbsp;</option><br>
+    </select>
+    <select id='op'>
+        <option>^</option>
+        <option>|</option>
+    </select>
+    <select id='nega'>
+        <option>+</option>
+        <option>-</option>
+    </select>
+</div>
+<pre><tt></tt></pre>

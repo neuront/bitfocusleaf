@@ -1,0 +1,23 @@
+export bfplDupstr: (str, t): '' if t = 0 else Array(t + 1).join(str)
+export bfplStrRepAt: (str, start, rep): str.substr(0, start) + rep +
+                                        str.substr(start + rep.length)
+
+ESCAPE_DICT: {
+    '\n': '<br>',
+    '<': '&lt;',
+    '>': '&gt;',
+    '&': '&amp;',
+    ' ': '&nbsp;',
+}
+
+export ESCAPE_DICT: ESCAPE_DICT
+export bfplEsc: (str): (str |: ESCAPE_DICT[$] if ESCAPE_DICT[$] else $).join('')
+export bfplPageArgs: ():
+    result: {}
+    url: window.location.href
+    begin: url.indexOf('?') + 1
+    endp: url.indexOf('#')
+    url.slice(begin, url.length if endp = -1 else endp).split('&') |:
+        p: $.split('=')
+        result[p[0]]: p[1]
+    return result

@@ -1,0 +1,146 @@
+<script>
+$('document').ready(function() {
+  function thread(str, sz) {
+    var SPACE = ' '
+    var HTHRD = '-'
+    var VTHRD = '|'
+    var CHAR_2_THREAD = {
+         '0': [
+              HTHRD,
+          VTHRD, VTHRD,
+              SPACE,
+          VTHRD, VTHRD,
+              HTHRD
+      ], '1': [
+              SPACE,
+          SPACE, VTHRD,
+              SPACE,
+          SPACE, VTHRD,
+              SPACE
+      ], '2': [
+              HTHRD,
+          SPACE, VTHRD,
+              HTHRD,
+          VTHRD, SPACE,
+              HTHRD
+      ], '3': [
+              HTHRD,
+          SPACE, VTHRD,
+              HTHRD,
+          SPACE, VTHRD,
+              HTHRD
+      ], '4': [
+              SPACE,
+          VTHRD, VTHRD,
+              HTHRD,
+          SPACE, VTHRD,
+              SPACE
+      ], '5': [
+              HTHRD,
+          VTHRD, SPACE,
+              HTHRD,
+          SPACE, VTHRD,
+              HTHRD
+      ], '6': [
+              HTHRD,
+          VTHRD, SPACE,
+              HTHRD,
+          VTHRD, VTHRD,
+              HTHRD
+      ], '7': [
+              HTHRD,
+          SPACE, VTHRD,
+              SPACE,
+          SPACE, VTHRD,
+              SPACE
+      ], '8': [
+              HTHRD,
+          VTHRD, VTHRD,
+              HTHRD,
+          VTHRD, VTHRD,
+              HTHRD
+      ], '9': [
+              HTHRD,
+          VTHRD, VTHRD,
+              HTHRD,
+          SPACE, VTHRD,
+              HTHRD
+      ], '-': [
+              SPACE,
+          SPACE, SPACE,
+              HTHRD,
+          SPACE, SPACE,
+              SPACE
+      ]
+    };
+    function threadHori(str, size, index) {
+      var r = '';
+      for (i = 0; i < str.length; ++i) {
+        var ch = str.charAt(i);
+        var threads = CHAR_2_THREAD[ch];
+        r += SPACE;
+        for (j = 0; j < size; ++j) {
+          r += threads[index];
+        }
+        r += (SPACE + SPACE);
+      }
+      return r + '\n';
+    }
+    function threadVert(str, size, index) {
+      var r = '';
+      for (i = 0; i < size; ++i) {
+        for (j = 0; j < str.length; ++j) {
+          var ch = str.charAt(j);
+          var threads = CHAR_2_THREAD[ch];
+          r += threads[index];
+          for (k = 0; k < size; ++k) {
+            r += SPACE;
+          }
+          r += threads[index + 1] + SPACE;
+        }
+        r += '\n';
+      }
+      return r;
+    }
+    var text = '';
+    for (i = 0; i < str.length; ++i) {
+      if (str[i] in CHAR_2_THREAD) {
+        text += str[i];
+      }
+    }
+    $('span').html('');
+    if (text == '') {
+      $('span').html('文本为空或无效字符, 显示当前日期:');
+      text = now();
+    }
+    return threadHori(text, sz, 0)
+         + threadVert(text, sz, 1)
+         + threadHori(text, sz, 3)
+         + threadVert(text, sz, 4)
+         + threadHori(text, sz, 6);
+  }
+  function now() {
+    var n = new Date();
+    return n.getFullYear() + '-' + (n.getMonth() + 1) + '-' + n.getDate();
+  }
+  $('tt').html(thread('', 1));
+  for (i = 0; i < 5; ++i)
+    $('#sz').append('<option>' + (i + 1) + '</option>');
+  function make() {
+    var str = $('#str').val();
+    var size = parseInt($('#sz').val());
+    $('tt').html(thread(str, size));
+  }
+  $('button').click(make);
+  $('select').change(make);
+});
+</script>
+
+<div class='ng-scope'>
+    <input type='text' id='str' placeholder='在此输入数字或横线 ("-")'></input>
+    <select id='sz'></select>
+    <button class='btn btn-success btn-xs'>生成</button>
+    <span></span>
+    <br>
+    <pre><tt></tt></pre>
+</div>

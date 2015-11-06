@@ -1,0 +1,53 @@
+<script>
+$('document').ready(function() {
+  var nop = function(r) { return r; };
+
+  $('#sort').click(function() {
+    var optUniq = ($('#opt_uniq').is(':checked') ?
+      function(texts) {
+        var d = {}, r = [], i;
+        for (i = 0; i < texts.length; ++i) {
+          d[texts[i]] = null;
+        }
+        for (i in d) {
+          r.push(i);
+        }
+        return r;
+      } : nop);
+    var optReverse = ($('#opt_reverse').is(':checked') ?
+                            function(texts) { return texts.reverse(); } : nop);
+    var delimiters = $('#opt_delim').val();
+    var optDelim = function(texts) {
+      var r = null, s = texts, i, j, delim;
+      for (i = 0; i < delimiters.length; ++i) {
+        delim = delimiters[i];
+        r = s;
+        s = [];
+        for (j = 0; j < r.length; ++j) {
+          s = s.concat(r[j].split(delim));
+        }
+      }
+      return s;
+    };
+    var optTrim = ($('#opt_trim').is(':checked') ?
+      function(texts) {
+        return texts.map(function(t) { return t.trim(); }
+                   ).filter(function(t) {return t.length != 0});
+      } : nop);
+
+    var inTexts = $('#input').val().split('\n');
+    var outTexts = optReverse(optUniq(optTrim(optDelim(inTexts))).sort());
+    $('#output').val(outTexts.join('\n'));
+  });
+});
+</script>
+
+<p><textarea id='input' cols='80' rows='16'></textarea></p>
+<p>
+    <input type='checkbox' id='opt_uniq'>排除重复
+    <input type='checkbox' id='opt_trim'>删除空白
+    <input type='checkbox' id='opt_reverse'>倒序
+    <input type='text' id='opt_delim' placeholder='行内分隔符'>
+    <button id='sort'>排序</button>
+</p>
+<textarea id='output' cols='80' rows='16'></textarea>

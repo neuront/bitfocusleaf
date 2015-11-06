@@ -1,0 +1,52 @@
+<script>
+$('document').ready(function() {
+  function blink(cursor) {
+    var TICK = 500;
+    function show() {
+      cursor.html('_');
+      setTimeout(hide, TICK);
+    }
+    function hide() {
+      cursor.html('');
+      setTimeout(show, TICK);
+    }
+    show();
+  }
+
+  var timer = null;
+  function reset() {
+    var text = $('textarea')[0].value;
+    function nextTick(index, str) {
+      if (text.length < index)
+        return;
+      var ch = text.charAt(index);
+      var tick = 100;
+      if (ch == '\n') {
+        tick = 400;
+      }
+      if (ESCAPE_DICT[ch]) {
+        ch = ESCAPE_DICT[ch];
+      }
+      str += ch;
+      $('#typer').html(str);
+      timer = setTimeout(function() { nextTick(index + 1, str); }, tick);
+    }
+    if (timer != null) {
+      clearTimeout(timer);
+    }
+    nextTick(0, '');
+  }
+
+  $('button').click(reset);
+  $('textarea')[0].value = 'N.Yuki> また図書館に';
+  reset();
+  $('textarea')[0].value = '在这里输入任意文字再点击下方的按钮';
+  blink($('#cursor'));
+});
+</script>
+
+<textarea id='content' cols='40' rows='6'></textarea><br>
+<button>Type it</button><br>
+<span style='font-family: monospace;'>
+    <span id='typer'></span><span id='cursor'></span>
+</span>

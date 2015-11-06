@@ -1,0 +1,52 @@
+<script>
+window.pagens = {};
+window.pagens.display = function(scope, state, ch) {
+    var i, j, k, base, row, tbl, lastCell;
+    var code = parseInt(ch);
+    if (isNaN(code)) {
+        code = ch.charCodeAt(0);
+    }
+    if (!(0 <= code && code <= 0xffff)) {
+        $('#ccerror').html('不合法区间');
+        return;
+    }
+    $('#cface').text(String.fromCharCode(code));
+    $('#ccode').html(' - 字符编码: ' + code + '(0x' + code.toString(16) + ')');
+    base = code - code % 0x100;
+    scope.code = code;
+    if (base !== scope.base) {
+        tbl = [];
+        for (j = 0; j < 16; ++j) {
+            tbl.push([]);
+            for (i = 0; i < 16; ++i) {
+                tbl[j].push(j * 16 + i + base);
+            }
+        }
+        scope.base = base;
+        scope.tbl = tbl;
+    }
+    state.transitionTo('unichrs', {ch: ch}, {notify: false});
+};
+</script>
+
+<div>
+    字符编码 <input id='ch' ng-model='ch' ng-change='display(ch)'>
+    (如: ASCII 字符空间小于 128, 其它字符在 128-0xFFFF 之间; 支持前置 0x 的十六进制数字; 或输入一个字符查找其编码)<br>
+    <span id='ccerror'></span>
+    <strong id='cface'></strong><span id='ccode'></span>
+</div>
+<table style='text-align: center'>
+    <tr ng-repeat='row in tbl'>
+        <td ng-repeat='c in row'>
+            <span ng-bind='decode(c)' ng-class="{false: '', true: 'selected'}[c == code]" ng-click='display(c)'></span>
+        </td>
+    </tr>
+</table>
+
+<style>
+td span { cursor: pointer; }
+td span.selected {
+    border: 1px solid;
+    font-size: 2em;
+}
+</style>

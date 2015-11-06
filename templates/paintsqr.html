@@ -1,0 +1,134 @@
+<p>在下面的矩形中单击确定矩形的一角, 移动鼠标, 在另一处单击确定对角</p>
+<pre><tt></tt></pre>
+
+<script>
+$('document').ready(function() {
+  function bfplCanvas(node, colCnt, rowCnt, ch) {
+    node.innerHTML = '';
+    var test_width = document.createElement('span');
+    node.appendChild(test_width);
+    test_width.innerHTML = '#';
+    var cellWidth = $(test_width).width();
+    node.removeChild(test_width);
+
+    var rows = new Array();
+    for (y = 0; y < rowCnt; ++y) {
+      rows[y] = document.createElement('span');
+      rows[y].innerHTML = bfplDupstr(ch, colCnt);
+      node.appendChild(rows[y]);
+      node.appendChild(document.createElement('br'));
+    }
+    this.draw = function(x, y, replacement) {
+      if (y < 0 || y >= rowCnt) return;
+      var repLen = replacement.length;
+      if (x + repLen <= 0 || x >= colCnt) return;
+      if (x < 0) {
+        replacement = replacement.substr(-x);
+        x = 0;
+      }
+      if (x + repLen > colCnt) {
+        replacement = replacement.substr(0, repLen - (x + repLen - colCnt));
+      }
+      rows[y].innerHTML = bfplStrRepAt(rows[y].innerHTML, x, replacement);
+    };
+    this.clear = function() {
+      for (y = 0; y < rowCnt; ++y) {
+        rows[y].innerHTML = bfplDupstr(ch, colCnt);
+      }
+    };
+    this.html = function(r) {
+      return $(rows[r]).html();
+    };
+    function packFunc(f, row) {
+      return function(event) {
+        f(Math.floor((event.pageX - $(node).position().left) / cellWidth), row);
+      }
+    }
+    this.click = function(f) {
+      for (y = 0; y < rowCnt; ++y) {
+        $(rows[y]).click(packFunc(f, y));
+      }
+      return this;
+    };
+    this.mousemove = function(f) {
+      for (y = 0; y < rowCnt; ++y) {
+        $(rows[y]).mousemove(packFunc(f, y));
+      }
+      return this;
+    };
+  }
+
+  var ptFixed = false;
+  var beginX = 0;
+  var beginY = 0;
+  var texts = new Array(64);
+  var canvas = null;
+  function replaceAt(x, y, str) {
+    canvas.draw(x, y, str);
+  }
+  function replace2At(xa, xb, y, stra, strb) {
+    canvas.draw(xa, y, stra);
+    canvas.draw(xb, y, strb);
+  }
+  function init(w, h) {
+    canvas = new bfplCanvas($('tt')[0], 160, 64, ' ')
+      .click(function(x, y) {
+        if (ptFixed) {
+          ptFixed = false;
+          drawRect(x, y, beginX, beginY);
+          burnToTexts();
+        } else {
+          ptFixed = true;
+          beginX = x;
+          beginY = y;
+        }
+      }).mousemove(function(x, y) {
+        if (ptFixed) {
+          drawTexts();
+          drawRect(x, y, beginX, beginY);
+        }
+      });
+    burnToTexts();
+  }
+  function burnToTexts() {
+    for (i = 0; i < texts.length; ++i)
+      texts[i] = canvas.html(i);
+  }
+  function drawTexts() {
+    for (i = 0; i < texts.length; ++i) {
+      if (canvas.html(i) != texts[i])
+        canvas.draw(0, i, texts[i]);
+    }
+  }
+  function rectWith(xa, ya, xb, yb, corner, hline, vline) {
+    if (ya > yb) {
+      var tmp = ya;
+      ya = yb;
+      yb = tmp;
+    }
+    if (xa == xb) {
+      replaceAt(xa, ya, corner);
+      for (++ya; ya < yb; ++ya)
+        replaceAt(xa, ya, vline);
+      replaceAt(xa, yb, corner);
+      return;
+    }
+    if (xa > xb) {
+      var tmp = xa;
+      xa = xb;
+      xb = tmp;
+    }
+    var w = xb - xa + 1;
+    var h = yb - ya + 1;
+    replaceAt(xa, ya, corner + bfplDupstr(hline, w - 2) + corner);
+    for (i = 1; i < h - 1; ++i)
+      replace2At(xa, xb, ya + i, vline, vline);
+    replaceAt(xa, yb, corner + bfplDupstr(hline, w - 2) + corner);
+  }
+  function drawRect(xa, ya, xb, yb) {
+    rectWith(xa, ya, xb, yb, '+', '-', '|');
+  }
+  init(160, 64);
+  drawRect(0, 0, 159, 63);
+});
+</script>

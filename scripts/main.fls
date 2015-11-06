@@ -1,0 +1,93 @@
+leaf: angular.module('leaf', ['ui.router'])
+leaf.config(['$stateProvider', '$urlRouterProvider', (state, route):
+    route.otherwise('/')
+
+    state.state('home', {
+        url: '/',
+        templateUrl: 'home.html',
+        controller: ['$scope', (scope):
+            scope.page.setTitleTopic('Project Leaf', 'Bit Focus Leaf')
+        ],
+    }).state('sierpinski', {
+        url: '/sierpinski',
+        templateUrl: 'sierpinski.html',
+        controller: ['$scope', (scope):
+            scope.page.setTitleTopic('闕葉', '三角分形')
+        ],
+    }).state('lcd7', {
+        url: '/lcd7',
+        templateUrl: 'lcd7.html',
+        controller: ['$scope', (scope):
+            scope.page.setTitleTopic('脈葉', '7 段式 LCD 显示设备')
+        ],
+    }).state('paintsqr', {
+        url: '/paintsqr',
+        templateUrl: 'paintsqr.html',
+        controller: ['$scope', (scope):
+            scope.page.setTitleTopic('棱葉', '矩形绘制设备')
+        ],
+    }).state('sudoku', {
+        url: '/sudoku',
+        templateUrl: 'sudoku.html',
+        controller: ['$scope', (scope):
+            scope.page.setTitleTopic('宮葉', '数独')
+        ],
+    }).state('typer', {
+        url: '/typer',
+        templateUrl: 'typer.html',
+        controller: ['$scope', (scope):
+            scope.page.setTitleTopic('烁葉', '打字机')
+        ],
+    }).state('sort', {
+        url: '/sort',
+        templateUrl: 'sort.html',
+        controller: ['$scope', (scope):
+            scope.page.setTitleTopic('章葉', '文本排序')
+        ],
+    }).state('unichrs', {
+        url: '/unichrs/:ch',
+        templateUrl: 'unichrs.html',
+        controller: ['$scope', '$stateParams', '$state', (scope, param, state):
+            scope.page.setTitleTopic('緯葉', '字符查找与显示')
+            scope.display: (ch): window.pagens.display(scope, state, ch)
+            scope.decode: String.fromCharCode
+            if param.ch
+                scope.display(decodeURIComponent(param.ch), false)
+        ],
+    }).state('tukasans', {
+        url: '/tukasans',
+        templateUrl: 'tukasans.html',
+        controller: ['$scope', (scope):
+            scope.page.setTitleTopic('搨葉', 'つかさンス在线')
+        ],
+    }).state('alchemy', {
+        url: '/alchemy',
+        templateUrl: 'alchemy.html',
+        controller: ['$scope', (scope):
+            scope.page.setTitleTopic('化葉', '字符炼金术')
+        ],
+    })
+])
+
+class Page
+    ctor()
+        this._title: ''
+        this._topic: ''
+
+    func title()
+        return this._title
+
+    func topic()
+        return this._topic
+
+    func setTitleTopic(tt, tp)
+        this._title: tt
+        this._topic: tp
+
+leaf.factory('page', Page)
+
+func main(scope, page)
+    scope.page: page
+
+export headCtl: ['$scope', 'page', main]
+export bodyCtl: ['$scope', 'page', main]

@@ -1,0 +1,207 @@
+<div id='btns-div'></div>
+<pre><tt></tt></pre>
+
+<script>
+$('document').ready(function() {
+  var lastx = 0;
+  var lasty = 0;
+  var size = 0;
+  var sqsize = 0;
+  var cells = [];
+  var emptyCnt = 0;
+  function filled() {
+    if (0 == --emptyCnt) {
+      emptyCnt = 1;
+      alert('GJ!');
+    }
+  }
+  function erased() {
+    emptyCnt++;
+  }
+  function vertVerify(x, n) {
+    for (i = 0; i < sqsize; ++i)
+      if (cell(x, i).html() == ' ' + n + ' ') {
+        cells[i][x].error();
+        return false;
+      }
+    return true;
+  }
+  function horiVerify(y, n) {
+    for (i = 0; i < sqsize; ++i)
+      if (cell(i, y).html() == ' ' + n + ' ') {
+        cells[y][i].error();
+        return false;
+      }
+    return true;
+  }
+  function groupVerify(x, y, n) {
+    for (i = 0; i < size; ++i)
+      for (j = 0; j < size; ++j)
+        if (cell(x * 3 + j, y * 3 + i).html() == ' ' + n + ' ') {
+          cells[y * 3 + i][x * 3 + j].error();
+          return false;
+        }
+    return true;
+  }
+  function scell(x, y) {
+    this.fixed = false;
+    var c = cell(x, y);
+    this.write = function(n) {
+      c.html(' ' + n + ' ');
+    }
+    this.setFixed = function(n) {
+      filled();
+      this.write(n);
+      this.fixed = true;
+      this.unselect();
+    }
+    this.selected = function() {
+      c.css('background', this.fixed ? 'orange' : 'white');
+      c.css('color', 'black');
+    }
+    this.unselect = function() {
+      c.css('background', '');
+      c.css('color', this.fixed ? 'orange' : '');
+    }
+    this.erase = function() {
+      if ('   ' != c.html()) {
+        this.write(' ');
+        erased();
+      }
+    }
+    this.fill = function(n) {
+      if (this.fixed) {
+        this.error();
+        return;
+      }
+      if (n == ' ') {
+        this.erase();
+        return;
+      }
+      if (horiVerify(y, n) && vertVerify(x, n)
+       && groupVerify(Math.floor(x / 3), Math.floor(y / 3), n))
+      {
+        this.erase();
+        this.write(n);
+        filled();
+      }
+    }
+    this.error = function() {
+      c.fadeOut(200, function() {
+        $(this).fadeIn(200);
+      });
+    }
+  }
+  function cell(x, y) {
+    return $('#' + y + '_' + x);
+  }
+  function init(sz) {
+    size = sz;
+    sqsize = sz * sz;
+    emptyCnt = sqsize * sqsize;
+    $('#btns-div').html('');
+    var vert = '+' + bfplDupstr('---+', sqsize);
+    $('tt').html(vert + '\n');
+
+    for (i = 0; i < sqsize; ++i)
+      $('#btns-div').append('<button>' + (i + 1) + '</button>');
+    $('button').click(function() {
+      fill($(this).html());
+    });
+    $('#btns-div').append('<button id="ers">X</button>');
+    $('#ers').click(erase);
+
+    for (i = 0; i < sqsize; ++i) {
+      $('tt').append('|');
+      for (j = 0; j < sqsize; ++j) {
+        $('tt').append('<span id="' + i + '_' + j + '">   </span>|');
+        cell(j, i).click(function(event) {
+          var id = $(this).attr('id');
+          var sep = id.indexOf('_');
+          updtCell(parseInt(id.substr(sep + 1)), parseInt(id.substr(0, sep)));
+        });
+      }
+      $('tt').append('\n' + vert + '\n');
+    }
+
+    for (i = 0; i < sqsize; ++i) {
+      cells[i] = [];
+      for (j = 0; j < sqsize; ++j)
+        cells[i][j] = new scell(j, i, false, ' ');
+    }
+    cells[0][2].setFixed(9);
+    cells[0][3].setFixed(5);
+    cells[0][4].setFixed(3);
+    cells[0][8].setFixed(2);
+    cells[1][0].setFixed(6);
+    cells[1][1].setFixed(2);
+    cells[1][5].setFixed(4);
+    cells[2][1].setFixed(5);
+    cells[2][4].setFixed(6);
+    cells[2][5].setFixed(9);
+    cells[2][6].setFixed(1);
+    cells[2][7].setFixed(8);
+    cells[3][0].setFixed(7);
+    cells[3][1].setFixed(8);
+    cells[3][2].setFixed(5);
+    cells[3][3].setFixed(1);
+    cells[3][5].setFixed(6);
+    cells[3][8].setFixed(3);
+    cells[5][0].setFixed(1);
+    cells[5][3].setFixed(9);
+    cells[5][5].setFixed(8);
+    cells[5][6].setFixed(5);
+    cells[5][7].setFixed(7);
+    cells[5][8].setFixed(4);
+    cells[8][0].setFixed(3);
+    cells[6][1].setFixed(9);
+    cells[6][2].setFixed(4);
+    cells[6][3].setFixed(6);
+    cells[6][4].setFixed(8);
+    cells[6][7].setFixed(3);
+    cells[7][3].setFixed(7);
+    cells[7][7].setFixed(6);
+    cells[7][8].setFixed(5);
+    cells[8][4].setFixed(1);
+    cells[8][5].setFixed(5);
+    cells[8][6].setFixed(2);
+    updtCell(0, 0);
+  }
+  function updtCell(x, y) {
+    cells[lasty][lastx].unselect();
+    lastx = x;
+    lasty = y;
+    cells[lasty][lastx].selected();
+  }
+  function fill(n) {
+    cells[lasty][lastx].fill(n);
+  }
+  function erase() {
+    fill(' ');
+  }
+  init(3);
+  $(document).keypress(function(event) {
+    var code = event.keyCode ? event.keyCode : event.which;
+    switch (code) {
+      case 106:
+        updtCell(lastx, (lasty + 1) % sqsize);
+        break;
+      case 107:
+        updtCell(lastx, (lasty + sqsize - 1) % sqsize);
+        break;
+      case 104:
+        updtCell((lastx + sqsize - 1) % sqsize, lasty);
+        break;
+      case 108:
+        updtCell((lastx + 1) % sqsize, lasty);
+        break;
+      case 48:
+        erase();
+        break;
+      default:
+        if (49 <= code && code <= 57)
+          fill(code - 48);
+    }
+  });
+});
+</script>

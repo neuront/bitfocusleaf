@@ -1,0 +1,206 @@
+<style>
+* {
+    cursor: none;
+}
+table {
+    border-spacing: 0;
+    margin: auto;
+}
+td, tr {
+    padding: 0;
+    margin: 0;
+}
+td {
+    border: 1px solid;
+    width: 40px;
+    height: 40px;
+    font-size: 32px;
+    vertical-align: middle;
+    text-align: center;
+}
+td.placed {
+    background-color: #666;
+}
+button:hover {
+    background-color: white;
+}
+</style>
+
+<div id='floater' style='width: 0px; height: 0px; position: absolute; left: 0px; top: 0px;'></div>
+<div style='text-align: center'>
+    置符: <span id='runesCount'></span>|
+    空位: <span id='unplacedCount'></span>|
+    <button id='discardButton'>弃符: <span id='discardedCount'>0</span></button>
+</div>
+<table id='arena'></table>
+</body>
+<script>
+var args = bfplPageArgs();
+var types = parseInt(args.tp) || 4, colors = parseInt(args.cl) || 4
+  , size = parseInt(args.sz) || 5, i, j, row;
+var runeChars = '☉♈♉♊♋♌♍♎♏♐♑♒♓';
+var colorMaps = ['white', '#aee', '#eae', '#eea', '#aae', '#aea', '#eaa',
+                 '#bbb'];
+
+function nextRune() {
+    return {type: Math.ceil(Math.random() * types),
+            color: Math.ceil(Math.random() * colors)};
+}
+
+function metaRune() {
+    return {type: 0, color: 0};
+}
+
+function renderRune(rune) {
+    return $('<div>').text(runeChars[rune.type]).css({
+        'color': colorMaps[rune.color],
+        'position': 'absolute',
+        'font-weight': '900',
+        'pointer-events': 'none',
+        'font-size': '32px'
+    });
+}
+
+function compableWith(x, y, r) {
+    try {
+        var rune = runes[y + 1][x];
+        if (rune.type === 0) {
+            return true;
+        }
+        return rune.color === r.color || rune.type === r.type;
+    } catch (e) {
+        return true;
+    }
+}
+
+function placeableAt(x, y, r) {
+    if (runes[y + 1][x]) {
+        return false;
+    }
+    if (!(runes[y][x] || runes[y + 2][x] || runes[y + 1][x - 1] ||
+            runes[y + 1][x + 1])) {
+        return false;
+    }
+    return compableWith(x - 1, y, r) && compableWith(x + 1, y, r) &&
+        compableWith(x, y - 1, r) && compableWith(x, y + 1, r);
+}
+
+function placeAt(x, y, r, node) {
+    node = node || renderRune(r);
+    node.css('position', '');
+    runes[y + 1][x] = r;
+
+    var cell = $($('#arena')[0].rows[y].cells[x]);
+    cell.append(node);
+
+    checkAndClearRow(y);
+    checkAndClearCol(x);
+    cell.addClass('placed');
+
+    $('#runesCount').text(runesCount++);
+    if (!placedFlags[y][x]) {
+        placedFlags[y][x] = true;
+        $('#unplacedCount').text(--placedCount);
+    }
+}
+
+function removeFrom(x, y) {
+    runes[y + 1][x] = null;
+    $($('#arena')[0].rows[y].cells[x]).html('');
+}
+
+function checkAndClearRow(y) {
+    for (var i = 0; i < dim; ++i) {
+        if (!runes[y + 1][i]) {
+            return false;
+        }
+    }
+    for (var i = 0; i < dim; ++i) {
+        removeFrom(i, y);
+    }
+    return true;
+}
+
+function checkAndClearCol(x) {
+    for (var i = 0; i < dim; ++i) {
+        if (!runes[i + 1][x]) {
+            return false;
+        }
+    }
+    for (var i = 0; i < dim; ++i) {
+        removeFrom(x, i);
+    }
+    return true;
+}
+
+var runes = [[]], dim = size * 2 + 1;
+var current = {data: nextRune(), node: null};
+current.node = renderRune(current.data);
+var placedFlags = [], placedCount = dim * dim;
+var runesCount = 0, discardedCount = 0;
+
+for (i = 0; i < dim; ++i) {
+    row = $('<tr>');
+    $('#arena').append(row);
+    runes.push([]);
+    placedFlags.push([]);
+    for (j = 0; j < dim; ++j) {
+        row.append($('<td>').css('', '').click(function() {
+            if (placeableAt(this.cellIndex, this.parentNode.rowIndex,
+                    current.data)) {
+                var cx = current.node.css('margin-left');
+                var cy = current.node.css('margin-top');
+                current.node.remove();
+                current.node.css({
+                    'margin-left': 0,
+                    'margin-top': 0
+                });
+                placeAt(this.cellIndex, this.parentNode.rowIndex, current.data,
+                        current.node);
+                if (placedCount === 0) {
+                    alert('GJ!');
+                    placeableAt = function() {return false;};
+                }
+                current.data = nextRune();
+                current.node = renderRune(current.data);
+                current.node.css({
+                    'margin-left': cx,
+                    'margin-top': cy
+                });
+                $('#floater').append(current.node);
+            }
+        }).hover(function() {
+            if (placeableAt(this.cellIndex, this.parentNode.rowIndex,
+                    current.data)) {
+                $(this).css('background-color', '#888');
+            }
+        }, function() {
+            $(this).css('background-color', '');
+        }));
+    }
+}
+runes.push([]);
+
+placeAt(size, size, metaRune());
+
+$(document).mousemove(function (e) {
+    current.node.css({
+        'margin-left': e.pageX - 10,
+        'margin-top': e.pageY - 10,
+    });
+});
+$('#floater').append(current.node);
+$('#discardButton').click(function() {
+    var cx = current.node.css('margin-left');
+    var cy = current.node.css('margin-top');
+    current.node.remove();
+    current.data = nextRune();
+    current.node = renderRune(current.data);
+    $('#floater').append(current.node);
+    current.node.css({
+        'margin-left': cx,
+        'margin-top': cy
+    });
+    $('#discardedCount').text(++discardedCount);
+});
+</script>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html ng-app='leaf'>
+<head ng-controller='headCtl'>
+    <meta charset='utf-8'>
+    <title ng-bind='page.title()'>Project Leaf</title>
+    <link rel='shortcut icon' href='http://blog.bitfoc.us/favicon.ico'>
+    {{ css('leaf') }}
+    {{ js('jquery.min') }}
+    {{ js('angular.min') }}
+    {{ js('angular-ui-router.min') }}
+    {{ js('leaf') }}
+</head>
+<body ng-controller='bodyCtl'>
+    <a ui-sref='home'>回到首页</a>
+    <a ui-sref='sierpinski'>三角分形</a>
+    <a ui-sref='lcd7'>LCD 显示</a>
+    <a ui-sref='paintsqr'>矩形绘制</a>
+    <a ui-sref='sudoku'>数独</a>
+    <a ui-sref='typer'>打字机</a>
+    <a ui-sref='sort'>文本排序</a>
+    <a ui-sref='unichrs'>字符查找</a>
+    <a ui-sref='tukasans'>ASCII Art 字体</a>
+    <a ui-sref='alchemy'>字符炼金术</a>
+    <a style='float: right;' href='http://bitfoc.us/'>Go to Bit Focus</a>
+    <hr>
+    <h1 ng-bind='page.topic()'></h1>
+    <hr>
+    <div ui-view></div>
